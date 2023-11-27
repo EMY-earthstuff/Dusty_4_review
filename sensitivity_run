@@ -1,0 +1,27 @@
+#!/bin/bash
+
+for VARIABLE in 0.0000645
+do
+
+    rm AAA_insertname.dat
+
+    sed -i "s/^  Bsmax = .*$/  Bsmax = ${VARIABLE}_dp/g" sliding_funk_nsurges_n5.f90
+
+    elmerf90 sliding_funk_nsurges_n5.f90 -o sliding_funk_nsurges_n5.so
+    elmerf90 MB.f90 -o MB.so
+
+
+    sed -i "s/Step = .*$/Step = \"_B${VARIABLE}_MB300\"/g" dusty_sensitivity_template_1xsurge.sif
+    ElmerSolver dusty_sensitivity_template_1xsurge.sif
+
+    mv AAA_insertname.dat volume_${VARIABLE}_MB300.dat
+    cp ./volume_${VARIABLE}_MB300.dat ./volumes/
+
+    sed -i "s/^fname_master = .*$/fname_master = 'synthetic_surge__B${VARIABLE}_MB300_t0'/g" ./KW_spin/time_fix_batch.py
+    python ./KW_spin/time_fix_batch.py
+
+done
+
+
+
+
